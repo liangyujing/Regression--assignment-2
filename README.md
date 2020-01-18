@@ -112,7 +112,7 @@ predict(lm3, newdata = data.frame(a=91),interval = "confidence")
 ##the 95% confidence interval associated with a beepnum of 91 is (60.92 85.42).
 
 
-#7. Checking assumptions
+# 7. Checking assumptions
 # the normality assumption  ##QQ plot
 plot(lm3,2)
 
@@ -139,3 +139,62 @@ ncvTest(fit3)
 # 8. Citation
 citation(package = "base", lib.loc = NULL, auto = NULL)
 readCitationFile(file, meta = NULL)
+
+______________________________________________________________
+# 9 E.g., ```{r Regression, include = FALSE, results = "asis"}
+# making dummies (for conditions)
+dummy_y <- as.numeric(picture=="young")
+dummy_e <- as.numeric(picture=="elderly")
+
+# Difference means between conditions
+mean_lm <- lm(acceptance ~ dummy_y + dummy_e)
+sum_mean_lm <- summary(mean_lm)
+
+# General linear regression with dummies, main effects and interaction
+linreg = lm(acceptance ~ dummy_y + dummy_e + digit + dummy_e:digit + dummy_y:digit)
+interaction <- summary(linreg)
+View(interaction)
+
+# the different plots per condition
+##sexy women condition
+reg_s = lm(sexy_data$Acceptance ~ sexy_data$Digit)
+sum_reg_s <- summary(reg_s)
+reg_splot= plot(sexy_data$Digit, sexy_data$Acceptance,
+                xlab = 'right-hand 2D:4D', ylab ='minimum acceptance', main='Sexy condition')
+abline(reg_s)
+
+## elderly women condition
+reg_e = lm(elderly_data$Acceptance ~ elderly_data$Digit)
+sum_reg_e <- summary(reg_e)
+reg_eplot= plot(elderly_data$Digit, elderly_data$Acceptance,
+                xlab = 'right-hand 2D:4D', ylab ='minimum acceptance', main ='Elderly condition')
+abline(reg_e)
+
+## young women condition
+reg_y = lm(young_data$Acceptance ~ young_data$Digit)
+sum_reg_y <- summary(reg_y)
+reg_yplot= plot(young_data$Digit, young_data$Acceptance,
+                xlab = 'right-hand 2D:4D', ylab ='minimum acceptance', main = 'Young condition')
+abline(reg_y)
+
+# Testing hypothesis 4
+h4 <- lm(acceptance ~ dummy_e + manipulation_check)
+sum_h4 <- summary(h4)
+
+#Checking assumptions
+## the normality assumption  ##QQ plot
+plot(linreg,2)
+## evaluating Nonlinearity 
+### component + residual plot aka partial-residual plots
+crPlots(reg_s, data = Simulated_Data)
+crPlots(reg_e, data = Simulated_Data)
+crPlots(reg_y, data = Simulated_Data)
+##You should see a pink line that models the residuals of your predictor against your dependent variable (i.e., the loess line). The blue striped line represents the line of best fit. If your pink line seems to be similarly linear as your blue striped line, you're good. If the pink line appears curved relative to the blue striped line, you likely have a linearity problem.
+
+## homoscedasticity assumption
+ncvTest(linreg)
+##p = 0.82516, suggesting that our data is homoscedastic.
+
+# Calculating p-value
+p_value_mean <- 1- pf(sum_mean_lm$fstatistic[1], sum_mean_lm$fstatistic[2], sum_mean_lm$fstatistic[3])
+```
